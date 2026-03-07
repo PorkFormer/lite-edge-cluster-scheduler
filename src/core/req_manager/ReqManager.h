@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <boost/functional/hash.hpp>
+#include <boost/uuid/uuid_hash.hpp>
 
 #include "domain/config/config.h"
 #include "infra/db/req_repository.h"
