@@ -80,6 +80,14 @@ set(ABSL_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest httplib json spdlog grpc)
 
+# Ensure gRPC imported targets exist for downstream link lines.
+if (TARGET grpc AND NOT TARGET gRPC::grpc)
+    add_library(gRPC::grpc ALIAS grpc)
+endif()
+if (TARGET grpc++ AND NOT TARGET gRPC::grpc++)
+    add_library(gRPC::grpc++ ALIAS grpc++)
+endif()
+
 set(SQLITE_ROOT "${DEPS_ROOT}/sqlite-src")
 add_library(sqlite3 STATIC "${SQLITE_ROOT}/sqlite3.c")
 target_include_directories(sqlite3 PUBLIC "${SQLITE_ROOT}")
