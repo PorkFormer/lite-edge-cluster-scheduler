@@ -1,16 +1,16 @@
-add_executable(gateway
+add_executable(platform
         main.cpp
         platform/Platform.cpp
         http/HttpServer.cpp
         grpc/GrpcServer.cpp
 )
 
-target_include_directories(gateway
+target_include_directories(platform
         PRIVATE
         ${CMAKE_SOURCE_DIR}/src
 )
 
-target_link_libraries(gateway
+target_link_libraries(platform
         PRIVATE
         req_manager
         services
