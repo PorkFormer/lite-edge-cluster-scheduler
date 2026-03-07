@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <thread>
 
+#include <boost/uuid/nil_generator.hpp>
 #include <spdlog/spdlog.h>
 
 #include "core/node_manager/NodeManager.h"
