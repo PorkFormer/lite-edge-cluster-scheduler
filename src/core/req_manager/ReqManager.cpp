@@ -199,6 +199,10 @@ NodeManager &ReqManager::GetNodeManager() {
     return *node_manager_;
 }
 
+const NodeManager &ReqManager::GetNodeManager() const {
+    return *node_manager_;
+}
+
 void ReqManager::Start() {
     bool expected = false;
     if (!started_.compare_exchange_strong(expected, true)) {

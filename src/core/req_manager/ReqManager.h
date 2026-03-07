@@ -52,6 +52,7 @@ public:
     void RecoverTasks(const DeviceID &device_id);
 
     NodeManager &GetNodeManager();
+    const NodeManager &GetNodeManager() const;
 
     std::vector<std::string> GetPendingSubReqIds() const;
     nlohmann::json BuildReqList(const std::string &client_ip) const;
