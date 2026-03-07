@@ -22,7 +22,7 @@ public:
     bool DisconnectDevice(const Device &device);
 
     std::shared_mutex &Mutex() { return devs_mutex_; }
-    const std::shared_mutex &Mutex() const { return devs_mutex_; }
+    std::shared_mutex &Mutex() const { return devs_mutex_; }
     std::map<DeviceID, Device> &DeviceStaticInfo() { return device_static_info_; }
     const std::map<DeviceID, Device> &DeviceStaticInfo() const { return device_static_info_; }
     std::map<DeviceID, DeviceStatus> &DeviceStatusMap() { return device_status_; }
@@ -34,7 +34,7 @@ public:
 
 private:
     std::map<TaskType, std::map<DeviceType, StaticInfoItem>> static_info_;
-    std::shared_mutex devs_mutex_;
+    mutable std::shared_mutex devs_mutex_;
     std::map<DeviceID, Device> device_static_info_;
     std::map<DeviceID, DeviceStatus> device_status_;
     std::map<DeviceID, std::vector<TaskType>> device_active_services_;
