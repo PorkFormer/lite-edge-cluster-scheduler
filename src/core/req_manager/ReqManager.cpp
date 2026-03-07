@@ -163,6 +163,8 @@ std::unordered_map<std::string, int> LoadExistingSequences(const std::filesystem
     return sequences;
 }
 
+}
+
 ReqManager::ReqManager(const Args &args, NodeManager &node_manager)
     : upload_root_(args.grpc_upload_root.empty()
                       ? (std::filesystem::current_path() / "workspace" / "master" / "Input").string()
