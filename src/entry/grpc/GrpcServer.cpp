@@ -82,7 +82,7 @@ private:
 
     grpc::AsyncGenericService *service_;
     grpc::ServerCompletionQueue *cq_;
-    grpc::ServerContext ctx_;
+    grpc::GenericServerContext ctx_;
     grpc::GenericServerAsyncReaderWriter stream_;
     grpc::ByteBuffer request_;
     grpc::ByteBuffer response_;
