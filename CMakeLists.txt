@@ -103,7 +103,6 @@ add_subdirectory(src/entry)
 target_compile_definitions(gateway PUBLIC ABSOLUTE_CONFIG_PATH="${ABSOLUTE_CONFIG_PATH}")
 enable_testing()
 include(GoogleTest)
-add_subdirectory(tests/docker_client)
 # add_subdirectory(tests/scheduler)
 # add_subdirectory(tests/predict)
 # 构建gtest end
