@@ -11,6 +11,7 @@
 #include <unordered_set>
 
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <httplib.h>
 #include <nlohmann/json.hpp>

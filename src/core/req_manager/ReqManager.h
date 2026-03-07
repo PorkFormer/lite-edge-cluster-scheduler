@@ -162,7 +162,7 @@ private:
     std::deque<std::string> sub_pending_queue_;
     // 3.sub_reqs currently running on devices, used for retry and recovery
     // device_id â† list<sub_req_id>
-    std::unordered_map<DeviceID, std::list<std::string>, boost::hash<DeviceID>> sub_running_;
+    std::unordered_map<DeviceID, std::list<std::string>, boost::uuids::uuid_hash> sub_running_;
 
     mutable std::mutex rst_mutex_;
     std::condition_variable rst_cv_;
