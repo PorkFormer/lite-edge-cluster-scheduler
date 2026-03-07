@@ -8,6 +8,7 @@
 #include "domain/req/ClientRequest.h"
 #include "domain/req/SubRequest.h"
 #include "domain/enums/ScheduleStrategy.h"
+#include "domain/node/device.h"
 #include "infra/db/sqlite_db.h"
 
 struct ReqRecord {

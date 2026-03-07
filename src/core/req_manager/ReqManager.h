@@ -11,6 +11,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/functional/hash.hpp>
+
 #include "domain/config/config.h"
 #include "infra/db/req_repository.h"
 #include "core/req_manager/scheduler/engine/SchedulerEngine.h"
