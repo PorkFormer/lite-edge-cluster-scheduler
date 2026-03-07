@@ -5,7 +5,7 @@ add_executable(docker_client_test
 target_link_libraries(docker_client_test
         PRIVATE
         GTest::gtest_main
-        docker_client
+        infra_net
         time_tools
 )
 

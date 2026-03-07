@@ -20,7 +20,7 @@ target_link_libraries(gateway
         httplib::httplib
         thread_safe_map
         device_struct
-        docker_client
+        infra_net
         time_tools
         spdlog::spdlog
 )
