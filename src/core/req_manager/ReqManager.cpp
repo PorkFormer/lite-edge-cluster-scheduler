@@ -195,6 +195,8 @@ ReqManager &ReqManager::Get() {
     return *instance_;
 }
 
+ReqManager *ReqManager::instance_ = nullptr;
+
 NodeManager &ReqManager::GetNodeManager() {
     return *node_manager_;
 }
