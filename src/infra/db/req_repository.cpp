@@ -2,6 +2,7 @@
 
 #include <chrono>
 
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <spdlog/spdlog.h>
 
