@@ -6,6 +6,7 @@
 #include <thread>
 
 #include <grpcpp/grpcpp.h>
+#include <grpcpp/generic/async_generic_service.h>
 
 #include "domain/config/config.h"
 #include "services/req_ingress/ReqIngress.h"
