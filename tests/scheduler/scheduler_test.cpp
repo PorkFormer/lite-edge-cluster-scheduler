@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
-#include "scheduler.h"  // include Docker_scheduler
+
+#include "core/node_manager/NodeManager.h"
+#include "core/req_manager/scheduler/engine/SchedulerEngine.h"
+#include "domain/enums/TaskType.h"
+#include "domain/node/device.h"
 
 std::map<TaskType, std::string> taskTypeToString = {
         {YoloV5, "YoloV5"},
@@ -44,14 +48,14 @@ void DisplayStaticInfo(const std::map<TaskType, std::map<DeviceType, StaticInfoI
 
 
 // test read JSON file and put into map
-TEST(DockerSchedulerTest, TestJsonToMap) {
-    // json file location
+TEST(SchedulerEngineTest, TestJsonToMap) {
     std::string test_file = "../../../config_files/static_info.json";
 
-    // create Docker_scheduler and load json
-    Docker_scheduler scheduler(test_file);
-    // get static_info content
-    DisplayStaticInfo(Docker_scheduler::getStaticInfo());
+    NodeManager node_manager;
+    SchedulerEngine::SetNodeManager(&node_manager);
+    SchedulerEngine::LoadStaticInfo(test_file);
+
+    DisplayStaticInfo(node_manager.GetStaticInfo());
 }
 
 

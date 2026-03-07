@@ -5,7 +5,7 @@ add_executable(scheduler_test
 target_link_libraries(scheduler_test
         PRIVATE
         GTest::gtest_main
-        scheduler
+        req_manager
         time_recorder
 )
 

@@ -3,11 +3,11 @@
 文件接收HTTP服务（支持参数配置版）
 功能：接收文件并保持原始文件名保存到本地，支持自定义存储路径和端口
 使用：
-# 使用默认配置 默认保存到./received_files 默认端口8888
+# 使用默认配置 默认保存到./received_files 默认端口8889
 python3 rst_recv.py
 
 # 指定端口和目录
-python3 rst_recv.py --port 8888 --dir /tmp/received_files
+python3 rst_recv.py --port 8889 --dir /tmp/received_files
 
 # 使用短参数
 python3 rst_recv.py -p 8080 -d ./custom_dir
@@ -115,11 +115,11 @@ class FileReceiverHandler(BaseHTTPRequestHandler):
             err_ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             print(f"recv_timestamp: {err_ts}")
 
-def run_server(port=8888, storage_dir="./received_files"):
+def run_server(port=8889, storage_dir="./received_files"):
     """启动HTTP文件接收服务
     
     Args:
-        port: 监听端口 (默认8888)
+        port: 监听端口 (默认8889)
         storage_dir: 文件存储目录 (默认./received_files)
     """
     # 创建自定义请求处理器类
@@ -143,8 +143,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='文件接收HTTP服务')
     parser.add_argument('--port', '-p', 
                         type=int,
-                        default=8888,
-                        help='监听端口 (默认: 8888)')
+                        default=8889,
+                        help='监听端口 (默认: 8889)')
     parser.add_argument('--dir', '-d',
                         default="workspace/client/data",
                         help='client data root directory (default: workspace/client/data)')

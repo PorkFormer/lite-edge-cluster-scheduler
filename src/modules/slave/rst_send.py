@@ -388,7 +388,7 @@ class StrictIPSender:
         self,
         input_dir: str,
         interval: int = 5,
-        target_port: int = 8888,
+        target_port: int = 8889,
         gateway_host: str = DEFAULT_GATEWAY_HOST,
         gateway_port: int = DEFAULT_GATEWAY_PORT,
         device_id: str = DEFAULT_DEVICE_ID,
@@ -414,21 +414,17 @@ class StrictIPSender:
         self.service = service.strip()
         self.service_dirs = self._load_service_result_dirs()
         self.enable_csv = enable_csv
+        self.task_map = TaskMapIndex(TASK_MAP_FILE)
+        self.sub_req_tracker = SubReqTracker(SUB_REQ_DIR)
+        self._done_tasks = set()
+        self._done_lock = threading.Lock()
         if self.enable_csv:
-            self.task_map = TaskMapIndex(TASK_MAP_FILE)
-            self.sub_req_tracker = SubReqTracker(SUB_REQ_DIR)
             self.metrics_sampler = MetricsSampler(self.gateway_host, self.gateway_port, sample_interval_sec)
             self.csv_writer = SubReqCsvWriter(csv_path)
             self._start_collect_writer(sample_interval_sec)
-            self._done_tasks = set()
-            self._done_lock = threading.Lock()
         else:
-            self.task_map = None
-            self.sub_req_tracker = None
             self.metrics_sampler = None
             self.csv_writer = None
-            self._done_tasks = set()
-            self._done_lock = threading.Lock()
 
         # 兼容旧模式：未配置服务目录时，仍按 input_dir 扫描 <ip>/...
         if not self.service_dirs:
@@ -517,15 +513,36 @@ class StrictIPSender:
             except Exception:
                 pass
 
-    def _on_task_completed(self, task_id: str):
+    def notify_gateway_sub_req_done(self, meta: dict, status: str = "success") -> bool:
+        """Notify gateway that a sub-request finished."""
+        try:
+            conn = http.client.HTTPConnection(self.gateway_host, self.gateway_port, timeout=5)
+            payload = json.dumps(
+                {
+                    "req_id": meta.get("req_id", ""),
+                    "sub_req_id": meta.get("sub_req_id", ""),
+                    "status": status,
+                }
+            ).encode("utf-8")
+            headers = {"Content-Type": "application/json", "Content-Length": str(len(payload))}
+            conn.request("POST", "/sub_req_done", body=payload, headers=headers)
+            resp = conn.getresponse()
+            _ = resp.read()
+            return resp.status == 200
+        except Exception as e:
+            print(f"gateway sub_req_done notify error: {e}")
+            return False
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    def _on_sub_req_completed(self, meta: dict):
         if not self.enable_csv:
             return
-        mapping = self.task_map.get(task_id)
-        sub_req_id = mapping.get("sub_req_id")
+        sub_req_id = meta.get("sub_req_id")
         if not sub_req_id:
-            return
-        meta = self.sub_req_tracker.on_task_done(sub_req_id)
-        if not meta:
             return
         if not meta.get("start_time_ms"):
             meta["start_time_ms"] = int(time.time() * 1000)
@@ -546,13 +563,18 @@ class StrictIPSender:
         self.csv_writer.write_row(meta, end_metrics, "yolo_end")
 
     def _mark_task_done_once(self, task_id: str) -> bool:
-        if not self.enable_csv:
-            return False
         with self._done_lock:
             if task_id in self._done_tasks:
                 return False
             self._done_tasks.add(task_id)
-        self._on_task_completed(task_id)
+        mapping = self.task_map.get(task_id) if self.task_map else {}
+        sub_req_id = mapping.get("sub_req_id") if isinstance(mapping, dict) else ""
+        if sub_req_id and self.sub_req_tracker:
+            meta = self.sub_req_tracker.on_task_done(sub_req_id)
+            if meta:
+                self.notify_gateway_sub_req_done(meta)
+                if self.enable_csv:
+                    self._on_sub_req_completed(meta)
         return True
 
     def _start_collect_writer(self, interval_sec: int):
@@ -644,13 +666,13 @@ class StrictIPSender:
 
         success_count = 0
         for filename, file_path in files_to_send:
-            self._mark_task_done_once(filename)
             self.notify_gateway_task_result_ready(task_id=filename)
-            if self._send_single_file(file_path, ip, service):
-                notified = self.notify_gateway_task_completed(task_id=filename, client_ip=ip, service=service, status="success")
-                if not notified:
-                    print(f"[rst_send] gateway notify failed, keep file for retry: {filename}")
-                    continue
+            mapping = self.task_map.get(filename) if self.task_map else {}
+            req_id = mapping.get("req_id", "") if isinstance(mapping, dict) else ""
+            sub_req_id = mapping.get("sub_req_id", "") if isinstance(mapping, dict) else ""
+            if self._send_single_file(file_path, ip, service, req_id=req_id, sub_req_id=sub_req_id, task_id=filename):
+                self._mark_task_done_once(filename)
+                self.notify_gateway_task_completed(task_id=filename, client_ip=ip, service=service, status="success")
                 success_count += 1
                 try:
                     os.remove(file_path)
@@ -660,10 +682,10 @@ class StrictIPSender:
 
         print(f"[rst_send] done {ip}: {success_count}/{len(files_to_send)} ok")
 
-    def _send_single_file(self, file_path: str, ip: str, service: str) -> bool:
+    def _send_single_file(self, file_path: str, ip: str, service: str, req_id: str = "", sub_req_id: str = "", task_id: str = "") -> bool:
         """发送单个文件到指定IP"""
         try:
-            target_url = f"http://{ip}:{self.target_port}/recv_rst"
+            target_url = f"http://{self.gateway_host}:{self.gateway_port}/recv_rst"
             url_parts = urlparse(target_url)
 
             conn = http.client.HTTPConnection(
@@ -681,6 +703,19 @@ class StrictIPSender:
             body += f"--{boundary}\r\n".encode()
             body += f'Content-Disposition: form-data; name="service"\r\n\r\n{service}\r\n'.encode()
             body += f"--{boundary}\r\n".encode()
+            body += f'Content-Disposition: form-data; name="client_ip"\r\n\r\n{ip}\r\n'.encode()
+            body += f"--{boundary}\r\n".encode()
+            body += f'Content-Disposition: form-data; name="client_port"\r\n\r\n{self.target_port}\r\n'.encode()
+            if task_id:
+                body += f"--{boundary}\r\n".encode()
+                body += f'Content-Disposition: form-data; name="task_id"\r\n\r\n{task_id}\r\n'.encode()
+            if req_id:
+                body += f"--{boundary}\r\n".encode()
+                body += f'Content-Disposition: form-data; name="req_id"\r\n\r\n{req_id}\r\n'.encode()
+            if sub_req_id:
+                body += f"--{boundary}\r\n".encode()
+                body += f'Content-Disposition: form-data; name="sub_req_id"\r\n\r\n{sub_req_id}\r\n'.encode()
+            body += f"--{boundary}\r\n".encode()
             body += (
                 f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
                 f"Content-Type: application/octet-stream\r\n\r\n"
@@ -693,14 +728,14 @@ class StrictIPSender:
             response.read()  # 必须读取响应数据
 
             if response.status == 200:
-                print(f"📤 发送成功: {filename} -> {ip}")
+                print(f"📤 发送成功: {filename} -> gateway {self.gateway_host}:{self.gateway_port}")
                 return True
             else:
-                print(f"❌ 发送失败到 {ip} [{response.status}]")
+                print(f"❌ 发送失败到 gateway [{response.status}]")
                 return False
 
         except Exception as e:
-            print(f"⚠️  发送到 {ip} 出错: {e}")
+            print(f"⚠️  发送到 gateway 出错: {e}")
             return False
 
     def process_next_ip(self):
@@ -777,8 +812,8 @@ def parse_args():
         "--target-port",
         "-p",
         type=int,
-        default=8888,
-        help="目标端口 (默认: 8888)",
+        default=8889,
+        help="目标端口 (默认: 8889)",
     )
     parser.add_argument(
         "--gateway-host",

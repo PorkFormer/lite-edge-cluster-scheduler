@@ -60,8 +60,26 @@ FetchContent_Declare(
         SOURCE_DIR "${DEPS_ROOT}/spdlog-src"
 )
 
-FetchContent_MakeAvailable(googletest httplib json spdlog)
+FetchContent_Declare(
+        grpc
+        SOURCE_DIR "${DEPS_ROOT}/grpc-src"
+)
 
+set(gRPC_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_CSHARP_EXT OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_CSHARP_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_NODE_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_PHP_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_PYTHON_PLUGIN OFF CACHE BOOL "" FORCE)
+set(gRPC_BUILD_GRPC_RUBY_PLUGIN OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest httplib json spdlog grpc)
+
+set(SQLITE_ROOT "${DEPS_ROOT}/sqlite-src")
+add_library(sqlite3 STATIC "${SQLITE_ROOT}/sqlite3.c")
+target_include_directories(sqlite3 PUBLIC "${SQLITE_ROOT}")
+add_library(SQLite::SQLite3 ALIAS sqlite3)
 
 if (WIN32)
     add_compile_definitions(WIN32_LEAN_AND_MEAN)
@@ -69,12 +87,15 @@ endif ()
 
 
 get_filename_component(ABSOLUTE_CONFIG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config_files" ABSOLUTE)
-add_subdirectory(src/time_tools)
-add_subdirectory(src/custom_struct)
-add_subdirectory(src/docker_client)
-add_subdirectory(src/scheduler)
-add_subdirectory(src/docker_scheduler_agent)
-add_subdirectory(src/gateway)
+add_subdirectory(src/utils/time)
+add_subdirectory(src/utils/thread_safe_map)
+add_subdirectory(src/domain/node)
+add_subdirectory(src/infra/net)
+add_subdirectory(src/core/node_manager)
+add_subdirectory(src/core/req_manager)
+add_subdirectory(src/services)
+add_subdirectory(src/entry/agent)
+add_subdirectory(src/entry)
 target_compile_definitions(gateway PUBLIC ABSOLUTE_CONFIG_PATH="${ABSOLUTE_CONFIG_PATH}")
 enable_testing()
 include(GoogleTest)

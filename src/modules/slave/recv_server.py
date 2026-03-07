@@ -51,6 +51,8 @@ SUB_REQ_STATE = {}
 SUB_REQ_WORKERS = {}
 SUB_REQ_SEQ_LOCK = threading.Lock()
 SUB_REQ_SEQ = {}
+SUB_REQ_PROGRESS_LOCK = threading.Lock()
+SUB_REQ_PROGRESS = {}
 
 _SLAVE_BACKEND_CONFIG_PATH = ""
 _AGENT_CONTROL_PORT = 8000
@@ -189,12 +191,14 @@ def _promote_sub_req(state: dict) -> bool:
     if os.path.isdir(ready_root):
         state["staging_root"] = ready_root
         state["promoted"] = True
+        _mark_sub_req_promoted(state)
         return True
     try:
         os.makedirs(os.path.dirname(ready_root), exist_ok=True)
         os.replace(staging_root, ready_root)
         state["staging_root"] = ready_root
         state["promoted"] = True
+        _mark_sub_req_promoted(state)
         return True
     except Exception:
         return False
@@ -225,6 +229,7 @@ def _sub_req_worker(service_name: str):
             queue = SUB_REQ_QUEUE.get(service_name, [])
             if queue and queue[0] == sub_req_id:
                 queue.pop(0)
+        _mark_sub_req_all_received(sub_req_id)
         SUB_REQ_STATE.pop(sub_req_id, None)
 
 def _ensure_worker(service_name: str):
@@ -292,6 +297,98 @@ def bump_and_maybe_log():
             lf.write(line)
 
 
+def _mark_sub_req_promoted(state: dict) -> None:
+    sub_req_id = state.get("sub_req_id", "")
+    if not sub_req_id:
+        return
+    with SUB_REQ_PROGRESS_LOCK:
+        entry = SUB_REQ_PROGRESS.get(sub_req_id)
+        if not entry:
+            return
+        entry["promoted"] = True
+        entry["staging_root"] = state.get("staging_root", "")
+        entry["ready_root"] = state.get("ready_root", "")
+
+
+def _mark_sub_req_all_received(sub_req_id: str) -> None:
+    if not sub_req_id:
+        return
+    with SUB_REQ_PROGRESS_LOCK:
+        entry = SUB_REQ_PROGRESS.get(sub_req_id)
+        if not entry:
+            return
+        entry["all_received"] = True
+
+
+def _refresh_progress_completion(entry: dict) -> None:
+    if entry.get("completed"):
+        return
+    if not entry.get("all_received"):
+        return
+    ready_root = entry.get("ready_root", "")
+    if not ready_root or not os.path.isdir(ready_root):
+        entry["completed"] = True
+        return
+    if not has_any_files(ready_root):
+        entry["completed"] = True
+
+
+def _resolve_service_name_from_tasktype(tasktype: str) -> str:
+    cfg = _load_slave_backend_config(PROJECT_ROOT)
+    return _resolve_service_name(tasktype or "Unknown", cfg)
+
+
+def _build_service_status(service_name: str) -> dict:
+    service_name = _normalize_tasktype(service_name)
+    if not service_name or service_name == "Unknown":
+        return {"service": service_name, "state": "idle", "active_sub_req_id": "", "waiting": 0, "ready": 0}
+
+    with SUB_REQ_PROGRESS_LOCK:
+        entries = [v for v in SUB_REQ_PROGRESS.values() if v.get("service_name") == service_name]
+
+    ready_entries = []
+    waiting_count = 0
+    for entry in entries:
+        _refresh_progress_completion(entry)
+        if entry.get("completed"):
+            continue
+        if entry.get("promoted"):
+            ready_entries.append(entry)
+        else:
+            waiting_count += 1
+
+    ready_entries.sort(key=lambda x: int(x.get("seq") or 0))
+    active = ready_entries[0] if ready_entries else None
+    return {
+        "service": service_name,
+        "state": "processing" if active else "idle",
+        "active_sub_req_id": active.get("sub_req_id") if active else "",
+        "waiting": waiting_count,
+        "ready": max(len(ready_entries) - (1 if active else 0), 0),
+        "active_seq": int(active.get("seq") or 0) if active else 0,
+    }
+
+
+def _build_sub_req_status(sub_req_id: str) -> dict:
+    with SUB_REQ_PROGRESS_LOCK:
+        entry = SUB_REQ_PROGRESS.get(sub_req_id)
+        if not entry:
+            return {}
+        _refresh_progress_completion(entry)
+        data = dict(entry)
+
+    service_name = data.get("service_name", "")
+    status = "waiting"
+    if data.get("completed"):
+        status = "completed"
+    else:
+        service_status = _build_service_status(service_name)
+        if service_status.get("active_sub_req_id") == sub_req_id:
+            status = "processing"
+    data["status"] = status
+    return data
+
+
 # ===== /srv：接收图片并落盘（线程池执行写盘） =====
 @app.post("/recv_sub_req_meta")
 def recv_sub_req_meta():
@@ -350,7 +447,23 @@ def recv_sub_req_meta():
         "ready_root": ready_root,
         "seq": seq,
         "promoted": False,
+        "sub_req_id": sub_req_id,
     }
+    with SUB_REQ_PROGRESS_LOCK:
+        SUB_REQ_PROGRESS[sub_req_id] = {
+            "req_id": req_id,
+            "sub_req_id": sub_req_id,
+            "service_name": service_name,
+            "expected": sub_req_count,
+            "received": 0,
+            "seq": seq,
+            "promoted": False,
+            "all_received": False,
+            "completed": False,
+            "staging_root": staging_root,
+            "ready_root": ready_root,
+            "meta_time": time.time(),
+        }
     _ensure_worker(service_name)
 
     return build_success({"sub_req_id": sub_req_id})
@@ -446,6 +559,10 @@ def srv():
             if state and state.get("staging_root"):
                 target_root = state["staging_root"]
                 state["received"] = int(state.get("received") or 0) + 1
+        with SUB_REQ_PROGRESS_LOCK:
+            progress = SUB_REQ_PROGRESS.get(sub_req_id)
+            if progress:
+                progress["received"] = int(progress.get("received") or 0) + 1
         _append_task_map(file_name, sub_req_id, req_id, tasktype, src_ip)
     dir_path = os.path.join(target_root, src_ip)
     final_path = os.path.join(dir_path, os.path.basename(file_name))
@@ -472,6 +589,28 @@ def srv():
             "size_bytes": size_bytes,
         }
     )
+
+
+@app.get("/usage/service_status")
+def usage_service_status():
+    service = request.args.get("service", "") if request.args else ""
+    tasktype = request.args.get("tasktype", "") if request.args else ""
+    if not service and tasktype:
+        service = _resolve_service_name_from_tasktype(tasktype)
+    if not service:
+        return build_failed("service or tasktype required")
+    return build_success(_build_service_status(service))
+
+
+@app.get("/usage/sub_req_status")
+def usage_sub_req_status():
+    sub_req_id = request.args.get("sub_req_id", "") if request.args else ""
+    if not sub_req_id:
+        return build_failed("sub_req_id required")
+    data = _build_sub_req_status(sub_req_id)
+    if not data:
+        return build_failed("sub_req_id not found")
+    return build_success(data)
 
 
 if __name__ == "__main__":
