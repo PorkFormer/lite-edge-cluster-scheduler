@@ -6,6 +6,7 @@ add_library(docker_client STATIC
 target_include_directories(docker_client
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}/src
 )
 
 target_link_libraries(docker_client
