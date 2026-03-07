@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <boost/uuid/nil_generator.hpp>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
