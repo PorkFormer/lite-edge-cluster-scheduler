@@ -195,12 +195,11 @@ ReqManager &ReqManager::Get() {
     return *instance_;
 }
 
-void 
 NodeManager &ReqManager::GetNodeManager() {
     return *node_manager_;
 }
 
-ReqManager::Start() {
+void ReqManager::Start() {
     bool expected = false;
     if (!started_.compare_exchange_strong(expected, true)) {
         return;

@@ -180,7 +180,7 @@ private:
     std::mutex seq_mutex_;
     std::unordered_map<std::string, int> seq_map_;
 
-    ReqRepository repo_;
+    mutable ReqRepository repo_;
     NodeManager *node_manager_;
 
     static ReqManager *instance_;
