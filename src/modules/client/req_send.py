@@ -68,7 +68,6 @@ def main() -> None:
         help="input directory (override); default uses workspace/client/data/req/<tasktype>",
     )
     parser.add_argument("--tasktype", default="YoloV5", help="service/task type (e.g. YoloV5, Bert, ...)")
-    parser.add_argument("--req-id", default="", help="optional req_id for batch mode")
     args = parser.parse_args()
 
     images_dir = args.req_path.strip()
@@ -97,7 +96,7 @@ def main() -> None:
             ("grpc.max_receive_message_length", 128 * 1024 * 1024),
         ],
     ) as channel:
-        saved_count, resp_req_id, msg = upload_batch(channel, files, args.tasktype, req_id=args.req_id)
+        saved_count, resp_req_id, msg = upload_batch(channel, files, args.tasktype)
         if resp_req_id:
             print(f"stream sent {len(files)} files -> saved_count={saved_count}, req_id={resp_req_id}, resp={msg}")
         else:

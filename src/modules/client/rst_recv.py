@@ -152,11 +152,11 @@ def run_server(port=8889, storage_dir="./received_files"):
 def parse_args():
     """解析命令行参数"""
     parser = argparse.ArgumentParser(description='文件接收HTTP服务')
-    parser.add_argument('--port', '-p', 
+    parser.add_argument('--client-port',
                         type=int,
                         default=8889,
-                        help='监听端口 (默认: 8889)')
-    parser.add_argument('--dir', '-d',
+                        help='client listen port (default: 8889)')
+    parser.add_argument('--rst-path',
                         default="workspace/client/data/rst",
                         help='client result root directory (default: workspace/client/data/rst)')
     parser.add_argument('--tasktype',
@@ -168,20 +168,20 @@ if __name__ == "__main__":
     args = parse_args()
     
     # 确保目录存在
-    os.makedirs(args.dir, exist_ok=True)
+    os.makedirs(args.rst_path, exist_ok=True)
     
     print("启动配置:")
-    print(f" - 端口: {args.port}")
-    print(f" - 存储目录: {os.path.abspath(args.dir)}")
+    print(f" - 端口: {args.client_port}")
+    print(f" - 存储目录: {os.path.abspath(args.rst_path)}")
     
     # 创建自定义请求处理器类
-    handler_class = lambda *h_args, **h_kwargs: FileReceiverHandler(args.dir, args.tasktype, *h_args, **h_kwargs)
+    handler_class = lambda *h_args, **h_kwargs: FileReceiverHandler(args.rst_path, args.tasktype, *h_args, **h_kwargs)
 
-    server_address = ('', args.port)
+    server_address = ('', args.client_port)
     httpd = HTTPServer(server_address, handler_class)
     print(f"文件接收服务启动:")
-    print(f" - 监听端口: {args.port}")
-    print(f" - 存储路径: {os.path.abspath(args.dir)}")
+    print(f" - 监听端口: {args.client_port}")
+    print(f" - 存储路径: {os.path.abspath(args.rst_path)}")
     if args.tasktype:
         print(f" - 默认 tasktype: {args.tasktype}")
     
