@@ -167,12 +167,12 @@ std::unordered_map<std::string, int> LoadExistingSequences(const std::filesystem
 
 ReqManager::ReqManager(const Args &args, NodeManager &node_manager)
     : upload_root_(args.grpc_upload_root.empty()
-                      ? (std::filesystem::current_path() / "workspace" / "master" / "Input").string()
+                      ? (std::filesystem::current_path() / "workspace" / "master" / "data" / "input").string()
                       : args.grpc_upload_root),
-      output_root_((std::filesystem::current_path() / "workspace" / "master" / "output").string()),
+      output_root_((std::filesystem::current_path() / "workspace" / "master" / "data" / "output").string()),
       strategy_(args.grpc_strategy.empty() ? "load" : args.grpc_strategy),
       db_path_(args.db_path.empty()
-                   ? (std::filesystem::current_path() / "workspace" / "master" / "data" / "req_manager.db").string()
+                   ? (std::filesystem::current_path() / "workspace" / "master" / "db" / "req_manager.db").string()
                    : args.db_path),
       repo_(db_path_),
       node_manager_(&node_manager),
@@ -181,6 +181,10 @@ ReqManager::ReqManager(const Args &args, NodeManager &node_manager)
       result_sender_worker_(*this) {
     std::filesystem::create_directories(upload_root_);
     std::filesystem::create_directories(output_root_);
+    const auto db_dir = std::filesystem::path(db_path_).parent_path();
+    if (!db_dir.empty()) {
+        std::filesystem::create_directories(db_dir);
+    }
     seq_map_ = LoadExistingSequences(upload_root_);
     if (!repo_.Init()) {
         spdlog::warn("ReqRepository init failed, persistence disabled");
@@ -978,9 +982,13 @@ bool ReqManager::SaveImage(const std::string &client_ip,
     std::filesystem::create_directories(dir_path);
 
     std::filesystem::path hint(filename_hint);
-    std::string ext = hint.has_extension() ? hint.extension().string() : "";
-    int seq = NextSequence(tasktype, client_ip, req_id);
-    std::string filename = ip_dir + "_" + req_dir + "_" + std::to_string(seq) + ext;
+    std::string safe_name = SafeName(hint.filename().string());
+    std::string filename = safe_name;
+    if (filename.empty()) {
+        std::string ext = hint.has_extension() ? hint.extension().string() : "";
+        int seq = NextSequence(tasktype, client_ip, req_id);
+        filename = ip_dir + "_" + req_dir + "_" + std::to_string(seq) + ext;
+    }
     std::filesystem::path save_path = dir_path / filename;
 
     std::ofstream out(save_path, std::ios::binary);

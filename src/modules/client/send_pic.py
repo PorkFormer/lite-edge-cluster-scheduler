@@ -67,12 +67,12 @@ def main() -> None:
         "-D",
         "--dir",
         default="",
-        help="input directory (override); default uses workspace/client/data/<tasktype>/req",
+        help="input directory (override); default uses workspace/client/data/req/<tasktype>",
     )
     parser.add_argument(
         "--root",
-        default="workspace/client/data",
-        help="client data root directory (default: workspace/client/data)",
+        default="workspace/client/data/req",
+        help="client request root directory (default: workspace/client/data/req)",
     )
     parser.add_argument("--tasktype", default="YoloV5", help="service/task type (e.g. YoloV5, Bert, ...)")
     parser.add_argument("--req-id", default="", help="optional req_id for batch mode")
@@ -87,7 +87,7 @@ def main() -> None:
         if images_dir:
             images_dir = os.path.join(project_root(), images_dir)
         else:
-            images_dir = os.path.join(root_dir, args.tasktype, "req")
+            images_dir = os.path.join(root_dir, args.tasktype)
 
     files = list_image_files(images_dir)
     if args.max is not None:

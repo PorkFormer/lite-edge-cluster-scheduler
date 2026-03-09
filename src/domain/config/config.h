@@ -11,9 +11,9 @@ struct Args {
 
     // gRPC request receiver settings.
     int grpc_port = 9999;
-    std::string grpc_upload_root = "workspace/master/Input";
+    std::string grpc_upload_root = "workspace/master/data/input";
     std::string grpc_strategy = "load";
 
     // SQLite db path for req/sub_req persistence.
-    std::string db_path = "workspace/master/data/req_manager.db";
+    std::string db_path = "workspace/master/db/req_manager.db";
 };

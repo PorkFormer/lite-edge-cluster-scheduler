@@ -63,6 +63,17 @@ class FileReceiverHandler(BaseHTTPRequestHandler):
             if service in (".", ".."):
                 service = ""
 
+            req_id = ""
+            try:
+                req_id = form.getfirst("req_id", "") or ""
+            except Exception:
+                req_id = ""
+            req_id = req_id.strip()
+            if "/" in req_id or "\\" in req_id:
+                req_id = os.path.basename(req_id)
+            if req_id in (".", ".."):
+                req_id = ""
+
             # 兼容单 service 场景：允许通过命令行 --tasktype 指定存储目录
             if not service and self.default_tasktype:
                 service = self.default_tasktype
@@ -81,7 +92,7 @@ class FileReceiverHandler(BaseHTTPRequestHandler):
             # 保持原始文件名
             filename = os.path.basename(file_item.filename)
             # 目录约定：<root>/<service>/rst/<filename>
-            save_dir = os.path.join(self.storage_dir, service or "Unknown", "rst")
+            save_dir = os.path.join(self.storage_dir, req_id or service or "Unknown")
             os.makedirs(save_dir, exist_ok=True)
             save_path = os.path.join(save_dir, filename)
             
@@ -146,8 +157,8 @@ def parse_args():
                         default=8889,
                         help='监听端口 (默认: 8889)')
     parser.add_argument('--dir', '-d',
-                        default="workspace/client/data",
-                        help='client data root directory (default: workspace/client/data)')
+                        default="workspace/client/data/rst",
+                        help='client result root directory (default: workspace/client/data/rst)')
     parser.add_argument('--tasktype',
                         default="",
                         help='default service/task type directory (optional; when request has no service field)')

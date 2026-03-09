@@ -5,6 +5,7 @@
 #include <atomic>
 #include <chrono>
 #include <csignal>
+#include <filesystem>
 #include <string>
 #include <thread>
 
@@ -13,6 +14,20 @@ std::atomic<bool> g_shutdown{false};
 
 void OnSignal(int) {
     g_shutdown.store(true);
+}
+
+bool EnsureDir(const std::filesystem::path &dir, const char *label) {
+    if (dir.empty()) {
+        return true;
+    }
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
+    if (ec) {
+        spdlog::error("failed to create {} dir: {} ({}): {}",
+                      label, dir.string(), ec.value(), ec.message());
+        return false;
+    }
+    return true;
 }
 }  // namespace
 
@@ -62,6 +77,24 @@ int main(int argc, char *argv[]) {
     spdlog::info("grpc params: port={}, upload_root={}, strategy={}",
                  args.grpc_port, args.grpc_upload_root, args.grpc_strategy);
     spdlog::info("db params: path={}", args.db_path);
+
+    const std::filesystem::path upload_root = args.grpc_upload_root.empty()
+        ? (std::filesystem::current_path() / "workspace" / "master" / "data" / "input")
+        : std::filesystem::path(args.grpc_upload_root);
+    const std::filesystem::path output_root =
+        std::filesystem::current_path() / "workspace" / "master" / "data" / "output";
+    const std::filesystem::path log_root =
+        std::filesystem::current_path() / "workspace" / "master" / "log";
+    const std::filesystem::path db_path = args.db_path.empty()
+        ? (std::filesystem::current_path() / "workspace" / "master" / "db" / "req_manager.db")
+        : std::filesystem::path(args.db_path);
+
+    if (!EnsureDir(upload_root, "upload_root")
+        || !EnsureDir(output_root, "output_root")
+        || !EnsureDir(log_root, "log_root")
+        || !EnsureDir(db_path.parent_path(), "db")) {
+        return 1;
+    }
 
     const std::string addr = "0.0.0.0";
     const int port = 6666;
