@@ -23,8 +23,10 @@ bool EnsureDir(const std::filesystem::path &dir, const char *label) {
     std::error_code ec;
     std::filesystem::create_directories(dir, ec);
     if (ec) {
+        const std::filesystem::path abs_dir = std::filesystem::absolute(dir, ec);
+        const std::string shown_path = ec ? dir.string() : abs_dir.string();
         spdlog::error("failed to create {} dir: {} ({}): {}",
-                      label, dir.string(), ec.value(), ec.message());
+                      label, shown_path, ec.value(), ec.message());
         return false;
     }
     return true;
