@@ -59,45 +59,35 @@ def upload_batch(stub: grpc.Channel, files: List[str], tasktype: str, req_id: st
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="gRPC request sender (service-aware)")
-    parser.add_argument("-n", "--max", type=int, default=None, help="limit max files to send")
-    parser.add_argument("-H", "--host", default="127.0.0.1", help="gRPC server host")
-    parser.add_argument("-P", "--port", type=int, default=9999, help="gRPC server port")
+    parser.add_argument("--req-num", type=int, default=None, help="limit max files to send")
+    parser.add_argument("--master-ip", default="127.0.0.1", help="master gRPC server host")
+    parser.add_argument("--master-port", type=int, default=9999, help="master gRPC server port")
     parser.add_argument(
-        "-D",
-        "--dir",
+        "--req-path",
         default="",
         help="input directory (override); default uses workspace/client/data/req/<tasktype>",
-    )
-    parser.add_argument(
-        "--root",
-        default="workspace/client/data/req",
-        help="client request root directory (default: workspace/client/data/req)",
     )
     parser.add_argument("--tasktype", default="YoloV5", help="service/task type (e.g. YoloV5, Bert, ...)")
     parser.add_argument("--req-id", default="", help="optional req_id for batch mode")
     args = parser.parse_args()
 
-    root_dir = args.root
-    if not os.path.isabs(root_dir):
-        root_dir = os.path.join(project_root(), root_dir)
-
-    images_dir = args.dir.strip()
+    images_dir = args.req_path.strip()
     if not os.path.isabs(images_dir):
         if images_dir:
             images_dir = os.path.join(project_root(), images_dir)
         else:
-            images_dir = os.path.join(root_dir, args.tasktype)
+            images_dir = os.path.join(project_root(), "workspace", "client", "data", "req", args.tasktype)
 
     files = list_image_files(images_dir)
-    if args.max is not None:
-        limit = max(0, args.max)
+    if args.req_num is not None:
+        limit = max(0, args.req_num)
         files = files[:limit]
     if not files:
         print(f"No images found in directory: {images_dir}")
         return
 
-    target = f"{args.host}:{args.port}"
-    server_url = f"grpc://{args.host}:{args.port}/ImageUpload/UploadImages"
+    target = f"{args.master_ip}:{args.master_port}"
+    server_url = f"grpc://{args.master_ip}:{args.master_port}/ImageUpload/UploadImages"
     print(f"Sending images from: {images_dir} -> {server_url} (tasktype={args.tasktype})")
 
     with grpc.insecure_channel(
