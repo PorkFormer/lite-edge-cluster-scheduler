@@ -528,18 +528,12 @@ static void StartSlaveServices(const std::string &device_id) {
     recv_server_cmd = ReplaceAll(recv_server_cmd, "{MASTER_PORT}", std::to_string(g_gateway_port));
     rst_send_cmd = ReplaceAll(rst_send_cmd, "{MASTER_PORT}", std::to_string(g_gateway_port));
 
-    spdlog::info("[agent] manage services with restart_delay_sec={}", restart_delay_sec);
-    spdlog::info("[agent] log_dir={}", g_slave_log_dir);
-    spdlog::info("[agent] slave_backend_config={}", DetectSlaveBackendConfigPath());
-    if (!autostart_services_cfg.empty()) {
-        spdlog::info("[agent] autostart_services(from agent_services.json)={}", JoinCsv(autostart_services_cfg));
-    } else {
-    spdlog::info("[agent] autostart_services(from agent_services.json)=<empty>");
-    }
-    LogSection("recv_server");
-    spdlog::info("[agent] recv_server_cmd={}", recv_server_cmd);
-    LogSection("rst_send");
-    spdlog::info("[agent] rst_send_cmd={}", rst_send_cmd);
+    spdlog::info("[agent] log_dir={} backend_config={}", g_slave_log_dir, DetectSlaveBackendConfigPath());
+    spdlog::info("[agent] manage services restart_delay_sec={} autostart_services_cfg={}",
+                 restart_delay_sec,
+                 autostart_services_cfg.empty() ? "<empty>" : JoinCsv(autostart_services_cfg));
+    spdlog::debug("[agent] recv_server_cmd={}", recv_server_cmd);
+    spdlog::debug("[agent] rst_send_cmd={}", rst_send_cmd);
 
     const std::string recv_log_path = (std::filesystem::path(g_slave_log_dir) / "recv_server.log").string();
     const std::string rst_log_path = (std::filesystem::path(g_slave_log_dir) / "rst_send.log").string();
@@ -557,10 +551,9 @@ static void StartSlaveServices(const std::string &device_id) {
     const auto autostart_services_backend = GetAgentAutostartFromSlaveBackend(g_slave_backend_cfg);
     const auto autostart_services = UniqueUnion(autostart_services_cfg, autostart_services_backend);
     if (!autostart_services_backend.empty()) {
-        spdlog::info("[agent] agent_autostart(from slave_backend.json)={}", JoinCsv(autostart_services_backend));
+        spdlog::info("[agent] autostart_services_backend={}", JoinCsv(autostart_services_backend));
     }
     if (!autostart_services.empty()) {
-        LogSection("backend autostart");
         spdlog::info("[agent] ensure backends at startup={}", JoinCsv(autostart_services));
     }
     for (const auto &svc : autostart_services) {
@@ -897,7 +890,7 @@ int main(int argc, char* argv[]) {
     });
 
     // 启动服务器
-    spdlog::info("Starting docker scheduler agent on port {}", kAgentPort);
+    spdlog::info("[agent] listening on 0.0.0.0:{}", kAgentPort);
     if (!server.listen("0.0.0.0", kAgentPort)) {
         spdlog::error("Failed to start server");
         g_is_running = false; // 通知线程退出
