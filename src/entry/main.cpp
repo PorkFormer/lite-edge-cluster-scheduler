@@ -35,7 +35,7 @@ bool EnsureDir(const std::filesystem::path &dir, const char *label) {
 
 static Args parse_arguments(int argc, char *argv[]) {
     Args args;
-    args.config_path = "./myapp";
+    args.config_path = "config_files";
 
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
