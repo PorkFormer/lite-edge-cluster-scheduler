@@ -80,7 +80,7 @@ class CsvLogger:
 def _build_base_row(record_type, metrics):
     row = {
         "record_type": record_type,
-        "timestamp_ms": int(time.time() * 1000),
+        "timestamp_ms": time.strftime("%H:%M:%S"),
     }
     if metrics:
         row.update(metrics)

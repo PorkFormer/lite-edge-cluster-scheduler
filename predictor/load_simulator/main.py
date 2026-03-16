@@ -120,6 +120,8 @@ def main():
 
     def handle_event(event):
         event_type = event.get("type")
+        event_time = event.get("time", "unknown")
+        print(f"[Event] 触发事件 time={event_time} type={event_type}", flush=True)
         base_profile = event_profiles.get(event_type, {})
         profile = apply_override(base_profile, event.get("override"))
         loads = profile.get("loads", [])
@@ -132,29 +134,35 @@ def main():
 
         instances = []
         for load_cfg in loads:
-            inst = background_manager.start_load(load_cfg)
-            if inst is not None:
-                instances.append((inst, _resolve_duration(load_cfg)))
+            started = background_manager.start_load(load_cfg)
+            if started:
+                instances.append((started, _resolve_duration(load_cfg)))
         if instances:
             with active_lock:
-                active_instances.extend([inst for inst, _ in instances])
+                for inst_group, _ in instances:
+                    active_instances.extend(inst_group)
 
         for task_cfg in enqueue_tasks:
             task_type = task_cfg.get("task_type", "unknown")
             input_dir = task_cfg.get("input_dir")
             task_num = int(task_cfg.get("task_num", 1))
+            print(
+                f"[Event] 放置任务 type={task_type} num={task_num} input={input_dir}",
+                flush=True,
+            )
             task_queue.put(
                 {"task_type": task_type, "input_dir": input_dir, "task_num": task_num}
             )
 
-        for inst, duration in instances:
-            def _stop_one(instance=inst, dur=duration):
+        for inst_group, duration in instances:
+            def _stop_one(instances_to_stop=inst_group, dur=duration):
                 if dur > 0:
                     time.sleep(dur)
-                background_manager.stop_loads([instance])
+                background_manager.stop_loads(instances_to_stop)
                 with active_lock:
-                    if instance in active_instances:
-                        active_instances.remove(instance)
+                    for inst in list(instances_to_stop):
+                        if inst in active_instances:
+                            active_instances.remove(inst)
 
             t = threading.Thread(target=_stop_one, name=f"event_{event_type}_stop")
             t.daemon = True

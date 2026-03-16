@@ -38,6 +38,13 @@ class TaskProcessor:
                 queue_len_at_start=queue_repr,
                 metrics=metrics,
             )
+            print(
+                "[Task_Start] 取任务开始执行 "
+                f"type={task.get('task_type', 'unknown')} "
+                f"num={task.get('task_num', 1)} "
+                f"queue={queue_repr}",
+                flush=True,
+            )
 
             if task.get("task_type") == "YoloV5":
                 process_yolo_task(
@@ -56,6 +63,14 @@ class TaskProcessor:
                 start_time_ms=start_ms,
                 end_time_ms=end_ms,
                 metrics=metrics,
+            )
+            duration_ms = end_ms - start_ms
+            print(
+                "[Task_End] 任务完成 "
+                f"type={task.get('task_type', 'unknown')} "
+                f"num={task.get('task_num', 1)} "
+                f"duration_ms={duration_ms}",
+                flush=True,
             )
 
 

@@ -125,19 +125,26 @@ class BackgroundManager:
 
     def start_load(self, load_cfg):
         load_type = load_cfg.get("type")
+        count = int(load_cfg.get("count", 1))
+        if count < 1:
+            return []
         if load_type == "cpu":
-            runner = CpuLoadRunner(load_cfg.get("work_units", 1000000))
+            runners = [
+                CpuLoadRunner(load_cfg.get("work_units", 1000000))
+                for _ in range(count)
+            ]
         elif load_type == "io":
-            runner = IoLoadRunner(load_cfg.get("mb_per_sec", 10))
+            runners = [IoLoadRunner(load_cfg.get("mb_per_sec", 10)) for _ in range(count)]
         elif load_type == "net":
-            runner = NetLoadRunner(load_cfg.get("mb_per_sec", 5))
+            runners = [NetLoadRunner(load_cfg.get("mb_per_sec", 5)) for _ in range(count)]
         else:
-            return None
-        runner.start()
+            return []
+        for runner in runners:
+            runner.start()
         with self._lock:
             if load_type in self._active_counts:
-                self._active_counts[load_type] += 1
-        return LoadInstance(load_type, runner)
+                self._active_counts[load_type] += len(runners)
+        return [LoadInstance(load_type, runner) for runner in runners]
 
     def stop_loads(self, instances):
         for inst in instances:
