@@ -1,0 +1,23 @@
+{
+  "device_type": "leo_satellite",
+  "device_name": "LEO-IO-TEST",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "io_0_5": {"loads": [{"type": "io", "duration_sec": 20, "mb_per_sec": 0.5, "count": 1}]},
+    "io_1": {"loads": [{"type": "io", "duration_sec": 20, "mb_per_sec": 1, "count": 1}]},
+    "io_5": {"loads": [{"type": "io", "duration_sec": 20, "mb_per_sec": 5, "count": 1}]},
+    "io_10": {"loads": [{"type": "io", "duration_sec": 20, "mb_per_sec": 10, "count": 1}]},
+    "io_50": {"loads": [{"type": "io", "duration_sec": 20, "mb_per_sec": 50, "count": 1}]},
+    "io_100": {"loads": [{"type": "io", "duration_sec": 20, "mb_per_sec": 100, "count": 1}]},
+    "io_150": {"loads": [{"type": "io", "duration_sec": 20, "mb_per_sec": 150, "count": 1}]}
+  },
+  "event_schedule": [
+    {"time": "00:00:00", "type": "io_0_5"},
+    {"time": "00:00:30", "type": "io_1"},
+    {"time": "00:01:00", "type": "io_5"},
+    {"time": "00:01:30", "type": "io_10"},
+    {"time": "00:02:00", "type": "io_50"},
+    {"time": "00:02:30", "type": "io_100"},
+    {"time": "00:03:00", "type": "io_150"}
+  ]
+}

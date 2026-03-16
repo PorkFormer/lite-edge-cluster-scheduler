@@ -1,0 +1,19 @@
+{
+  "device_type": "leo_satellite",
+  "device_name": "LEO-CPU-TEST",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "cpu8_0": {"loads": [{"type": "cpu", "duration_sec": 20, "work_units": 0, "count": 8}]},
+    "cpu8_10000": {"loads": [{"type": "cpu", "duration_sec": 20, "work_units": 10000, "count": 8}]},
+    "cpu8_100000": {"loads": [{"type": "cpu", "duration_sec": 20, "work_units": 100000, "count": 8}]},
+    "cpu8_2000000": {"loads": [{"type": "cpu", "duration_sec": 20, "work_units": 2000000, "count": 8}]},
+    "cpu8_5000000": {"loads": [{"type": "cpu", "duration_sec": 20, "work_units": 5000000, "count": 8}]}
+  },
+  "event_schedule": [
+    {"time": "00:00:00", "type": "cpu8_0"},
+    {"time": "00:00:30", "type": "cpu8_10000"},
+    {"time": "00:01:00", "type": "cpu8_100000"},
+    {"time": "00:01:30", "type": "cpu8_2000000"},
+    {"time": "00:02:00", "type": "cpu8_5000000"}
+  ]
+}

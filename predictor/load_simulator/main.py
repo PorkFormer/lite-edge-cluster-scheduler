@@ -121,7 +121,6 @@ def main():
     def handle_event(event):
         event_type = event.get("type")
         event_time = event.get("time", "unknown")
-        print(f"[Event] 触发事件 time={event_time} type={event_type}", flush=True)
         base_profile = event_profiles.get(event_type, {})
         profile = apply_override(base_profile, event.get("override"))
         loads = profile.get("loads", [])
@@ -131,6 +130,24 @@ def main():
             if "duration_sec" in load_cfg:
                 return float(load_cfg.get("duration_sec", 0))
             return float(profile.get("duration_sec", 0))
+
+        load_summaries = []
+        for load_cfg in loads:
+            duration = _resolve_duration(load_cfg)
+            count = int(load_cfg.get("count", 1))
+            load_type = load_cfg.get("type", "unknown")
+            parts = [f"type={load_type}", f"duration={duration}s", f"count={count}"]
+            if load_type == "cpu":
+                parts.append(f"work_units={int(load_cfg.get('work_units', 0))}")
+            elif load_type in ("io", "net"):
+                parts.append(f"mb_per_sec={load_cfg.get('mb_per_sec', 0)}")
+            load_summaries.append("{" + ", ".join(parts) + "}")
+
+        load_text = ", ".join(load_summaries) if load_summaries else "none"
+        print(
+            f"[Event] 触发事件 time={event_time} type={event_type} loads={load_text}",
+            flush=True,
+        )
 
         instances = []
         for load_cfg in loads:
@@ -175,6 +192,8 @@ def main():
             on_event=handle_event,
         )
         time.sleep(0.5)
+    except KeyboardInterrupt:
+        print("[Event] 收到中断信号，开始清理...", flush=True)
     finally:
         with active_lock:
             background_manager.stop_loads(list(active_instances))
