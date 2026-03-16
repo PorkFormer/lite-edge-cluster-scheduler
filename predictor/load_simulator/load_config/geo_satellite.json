@@ -1,0 +1,42 @@
+{
+  "device_type": "geo_satellite",
+  "device_name": "GEO-1",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "photo_capture": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 180, "work_units": 9000000},
+        {"type": "io", "duration_sec": 180, "mb_per_sec": 40}
+      ],
+      "enqueue_tasks": [
+        {"task_type": "YoloV5", "input_dir": "input/YoloV5/geo_001", "task_num": 1}
+      ]
+    },
+    "ground_uplink": {
+      "loads": [
+        {"type": "net", "duration_sec": 300, "mb_per_sec": 30},
+        {"type": "io", "duration_sec": 300, "mb_per_sec": 10}
+      ]
+    },
+    "daily_load": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 3600, "work_units": 3000000}
+      ]
+    }
+  },
+  "event_schedule": [
+    {"time": "01:00:00", "type": "daily_load"},
+    {"time": "06:10:00", "type": "photo_capture"},
+    {"time": "06:40:00", "type": "ground_uplink"},
+    {
+      "time": "18:00:00",
+      "type": "photo_capture",
+      "override": {
+        "loads": [{"type": "cpu", "duration_sec": 240}],
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "input/YoloV5/geo_002"}
+        ]
+      }
+    }
+  ]
+}

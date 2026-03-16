@@ -1,0 +1,41 @@
+{
+  "device_type": "meo_satellite",
+  "device_name": "MEO-1",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "photo_capture": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 150, "work_units": 7000000},
+        {"type": "io", "duration_sec": 150, "mb_per_sec": 30}
+      ],
+      "enqueue_tasks": [
+        {"task_type": "YoloV5", "input_dir": "input/YoloV5/meo_001", "task_num": 1}
+      ]
+    },
+    "ground_uplink": {
+      "loads": [
+        {"type": "net", "duration_sec": 240, "mb_per_sec": 25},
+        {"type": "io", "duration_sec": 240, "mb_per_sec": 10}
+      ]
+    },
+    "daily_load": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 1800, "work_units": 2500000}
+      ]
+    }
+  },
+  "event_schedule": [
+    {"time": "03:00:00", "type": "daily_load"},
+    {"time": "08:20:00", "type": "photo_capture"},
+    {"time": "08:45:00", "type": "ground_uplink"},
+    {
+      "time": "20:10:00",
+      "type": "photo_capture",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "input/YoloV5/meo_002"}
+        ]
+      }
+    }
+  ]
+}

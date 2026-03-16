@@ -1,0 +1,15 @@
+{
+  "device_type": "leo_satellite",
+  "device_name": "LEO-CPU-TEST",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "cpu_only": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 60, "work_units": 10000}
+      ]
+    }
+  },
+  "event_schedule": [
+    {"time": "00:00:00", "type": "cpu_only"}
+  ]
+}

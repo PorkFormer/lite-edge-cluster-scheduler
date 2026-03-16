@@ -1,0 +1,41 @@
+{
+  "device_type": "uav_single_npu_d",
+  "device_name": "UAV-1",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "photo_capture": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 160, "work_units": 8000000},
+        {"type": "io", "duration_sec": 160, "mb_per_sec": 30}
+      ],
+      "enqueue_tasks": [
+        {"task_type": "YoloV5", "input_dir": "input/YoloV5/uav_001", "task_num": 1}
+      ]
+    },
+    "ground_uplink": {
+      "loads": [
+        {"type": "net", "duration_sec": 220, "mb_per_sec": 28},
+        {"type": "io", "duration_sec": 220, "mb_per_sec": 10}
+      ]
+    },
+    "daily_load": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 1800, "work_units": 3000000}
+      ]
+    }
+  },
+  "event_schedule": [
+    {"time": "07:00:00", "type": "daily_load"},
+    {"time": "07:30:00", "type": "photo_capture"},
+    {"time": "17:10:00", "type": "ground_uplink"},
+    {
+      "time": "17:40:00",
+      "type": "photo_capture",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "input/YoloV5/uav_002"}
+        ]
+      }
+    }
+  ]
+}

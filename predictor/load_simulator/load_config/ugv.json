@@ -1,0 +1,41 @@
+{
+  "device_type": "ugv_s5000_tiangai",
+  "device_name": "UGV-1",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "photo_capture": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 200, "work_units": 10000000},
+        {"type": "io", "duration_sec": 200, "mb_per_sec": 50}
+      ],
+      "enqueue_tasks": [
+        {"task_type": "YoloV5", "input_dir": "input/YoloV5/ugv_001", "task_num": 1}
+      ]
+    },
+    "ground_uplink": {
+      "loads": [
+        {"type": "net", "duration_sec": 260, "mb_per_sec": 35},
+        {"type": "io", "duration_sec": 260, "mb_per_sec": 15}
+      ]
+    },
+    "daily_load": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 2400, "work_units": 4000000}
+      ]
+    }
+  },
+  "event_schedule": [
+    {"time": "08:00:00", "type": "daily_load"},
+    {"time": "09:10:00", "type": "photo_capture"},
+    {"time": "09:40:00", "type": "ground_uplink"},
+    {
+      "time": "15:20:00",
+      "type": "photo_capture",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "input/YoloV5/ugv_002"}
+        ]
+      }
+    }
+  ]
+}

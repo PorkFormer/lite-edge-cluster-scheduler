@@ -1,0 +1,41 @@
+{
+  "device_type": "leo_satellite",
+  "device_name": "LEO-1",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "photo_capture": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 120, "work_units": 6000000},
+        {"type": "io", "duration_sec": 120, "mb_per_sec": 20}
+      ],
+      "enqueue_tasks": [
+        {"task_type": "YoloV5", "input_dir": "input/YoloV5/leo_001", "task_num": 1}
+      ]
+    },
+    "ground_uplink": {
+      "loads": [
+        {"type": "net", "duration_sec": 180, "mb_per_sec": 20},
+        {"type": "io", "duration_sec": 180, "mb_per_sec": 8}
+      ]
+    },
+    "daily_load": {
+      "loads": [
+        {"type": "cpu", "duration_sec": 1200, "work_units": 2000000}
+      ]
+    }
+  },
+  "event_schedule": [
+    {"time": "00:30:00", "type": "photo_capture"},
+    {"time": "00:50:00", "type": "ground_uplink"},
+    {"time": "07:30:00", "type": "daily_load"},
+    {
+      "time": "19:10:00",
+      "type": "photo_capture",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "input/YoloV5/leo_002"}
+        ]
+      }
+    }
+  ]
+}
