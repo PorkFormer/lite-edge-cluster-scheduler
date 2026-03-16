@@ -1,0 +1,21 @@
+{
+  "device_type": "leo_satellite",
+  "device_name": "LEO-NET-TEST",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "net_0_5": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 0.5, "count": 1}]},
+    "net_1": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 1, "count": 1}]},
+    "net_5": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 5, "count": 1}]},
+    "net_10": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 10, "count": 1}]},
+    "net_50": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 50, "count": 1}]},
+    "net_100": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 100, "count": 1}]}
+  },
+  "event_schedule": [
+    {"time": "00:00:00", "type": "net_0_5"},
+    {"time": "00:00:30", "type": "net_1"},
+    {"time": "00:01:00", "type": "net_5"},
+    {"time": "00:01:30", "type": "net_10"},
+    {"time": "00:02:00", "type": "net_50"},
+    {"time": "00:02:30", "type": "net_100"}
+  ]
+}
