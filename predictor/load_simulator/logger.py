@@ -5,12 +5,7 @@ import time
 
 CSV_COLUMNS = [
     "record_type",
-    "timestamp_ms",
-    "task_num",
-    "task_type",
-    "start_time_ms",
-    "end_time_ms",
-    "queue_len_at_start",
+    "time",
     "host_cpu_util",
     "host_mem_util",
     "host_mem_used",
@@ -25,6 +20,11 @@ CSV_COLUMNS = [
     "npu_mem_used_mb",
     "npu_mem_bw_util",
     "npu_temp",
+    "task_num",
+    "task_type",
+    "start_time_ms",
+    "end_time_ms",
+    "queue_len_at_start",
 ]
 
 
@@ -80,7 +80,7 @@ class CsvLogger:
 def _build_base_row(record_type, metrics):
     row = {
         "record_type": record_type,
-        "timestamp_ms": time.strftime("%H:%M:%S"),
+        "time": time.strftime("%H:%M:%S"),
     }
     if metrics:
         row.update(metrics)
