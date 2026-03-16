@@ -3,12 +3,12 @@
   "device_name": "LEO-NET-TEST",
   "monitor_interval_sec": 3,
   "event_profiles": {
-    "net_0_5": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 0.5, "count": 1}]},
-    "net_1": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 1, "count": 1}]},
-    "net_5": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 5, "count": 1}]},
-    "net_10": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 10, "count": 1}]},
-    "net_50": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 50, "count": 1}]},
-    "net_100": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 100, "count": 1}]}
+    "net_0_5": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 0.5, "count": 1, "iface": "enaphyt4i0", "target_ip": "169.254.235.202", "target_port": 9999}]},
+    "net_1": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 1, "count": 1, "iface": "enaphyt4i0", "target_ip": "169.254.235.202", "target_port": 9999}]},
+    "net_5": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 5, "count": 1, "iface": "enaphyt4i0", "target_ip": "169.254.235.202", "target_port": 9999}]},
+    "net_10": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 10, "count": 1, "iface": "enaphyt4i0", "target_ip": "169.254.235.202", "target_port": 9999}]},
+    "net_50": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 50, "count": 1, "iface": "enaphyt4i0", "target_ip": "169.254.235.202", "target_port": 9999}]},
+    "net_100": {"loads": [{"type": "net", "duration_sec": 20, "mb_per_sec": 100, "count": 1, "iface": "enaphyt4i0", "target_ip": "169.254.235.202", "target_port": 9999}]}
   },
   "event_schedule": [
     {"time": "00:00:00", "type": "net_0_5"},

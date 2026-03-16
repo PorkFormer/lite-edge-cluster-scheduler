@@ -139,8 +139,16 @@ def main():
             parts = [f"type={load_type}", f"duration={duration}s", f"count={count}"]
             if load_type == "cpu":
                 parts.append(f"work_units={int(load_cfg.get('work_units', 0))}")
-            elif load_type in ("io", "net"):
+            elif load_type == "io":
                 parts.append(f"mb_per_sec={load_cfg.get('mb_per_sec', 0)}")
+            elif load_type == "net":
+                parts.append(f"mb_per_sec={load_cfg.get('mb_per_sec', 0)}")
+                target_ip = load_cfg.get("target_ip", "127.0.0.1")
+                target_port = load_cfg.get("target_port", 9999)
+                iface = load_cfg.get("iface")
+                parts.append(f"target={target_ip}:{target_port}")
+                if iface:
+                    parts.append(f"iface={iface}")
             load_summaries.append("{" + ", ".join(parts) + "}")
 
         load_text = ", ".join(load_summaries) if load_summaries else "none"

@@ -5,6 +5,8 @@ import threading
 import time
 from multiprocessing import Event, Process
 
+import psutil
+
 
 class LoadInstance:
     def __init__(self, load_type, runner):
@@ -70,8 +72,11 @@ class IoLoadRunner:
 
 
 class NetLoadRunner:
-    def __init__(self, mb_per_sec):
+    def __init__(self, mb_per_sec, target_addr, bind_ip=None, iface=None):
         self.mb_per_sec = float(mb_per_sec)
+        self.target_addr = target_addr
+        self.bind_ip = bind_ip
+        self.iface = iface
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, name="net_load")
 
@@ -85,7 +90,17 @@ class NetLoadRunner:
 
     def _run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        target_addr = ("127.0.0.1", 9999)
+        if self.iface:
+            try:
+                sock.setsockopt(socket.SOL_SOCKET, 25, self.iface.encode())
+            except OSError:
+                pass
+        if self.bind_ip:
+            try:
+                sock.bind((self.bind_ip, 0))
+            except OSError:
+                pass
+        target_addr = self.target_addr
         payload = b"1" * 1400
         payload_mb = len(payload) / (1024 * 1024)
         try:
@@ -136,7 +151,19 @@ class BackgroundManager:
         elif load_type == "io":
             runners = [IoLoadRunner(load_cfg.get("mb_per_sec", 10)) for _ in range(count)]
         elif load_type == "net":
-            runners = [NetLoadRunner(load_cfg.get("mb_per_sec", 5)) for _ in range(count)]
+            target_ip = load_cfg.get("target_ip", "127.0.0.1")
+            target_port = int(load_cfg.get("target_port", 9999))
+            iface = load_cfg.get("iface")
+            bind_ip = _resolve_iface_ip(iface) if iface else None
+            runners = [
+                NetLoadRunner(
+                    load_cfg.get("mb_per_sec", 5),
+                    target_addr=(target_ip, target_port),
+                    bind_ip=bind_ip,
+                    iface=iface,
+                )
+                for _ in range(count)
+            ]
         else:
             return []
         for runner in runners:
@@ -152,3 +179,17 @@ class BackgroundManager:
             with self._lock:
                 if inst.load_type in self._active_counts:
                     self._active_counts[inst.load_type] -= 1
+
+    def snapshot_counts(self):
+        with self._lock:
+            return dict(self._active_counts)
+
+
+def _resolve_iface_ip(iface):
+    if not iface:
+        return None
+    addrs = psutil.net_if_addrs().get(iface, [])
+    for addr in addrs:
+        if addr.family == socket.AF_INET:
+            return addr.address
+    return None
