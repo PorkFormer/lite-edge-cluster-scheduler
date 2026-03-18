@@ -5,9 +5,13 @@ import struct
 import acl
 import os
 from PIL import Image
-from constant import ACL_MEM_MALLOC_HUGE_FIRST, \
-    ACL_MEMCPY_HOST_TO_DEVICE, ACL_MEMCPY_DEVICE_TO_HOST, \
-    ACL_ERROR_NONE, IMG_EXT
+from .constant import (
+    ACL_MEM_MALLOC_HUGE_FIRST,
+    ACL_MEMCPY_HOST_TO_DEVICE,
+    ACL_MEMCPY_DEVICE_TO_HOST,
+    ACL_ERROR_NONE,
+    IMG_EXT,
+)
 
 buffer_method = {
     "in": acl.mdl.get_input_size_by_index,

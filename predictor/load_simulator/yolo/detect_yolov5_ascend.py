@@ -25,8 +25,8 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-from acl_net import Net
-from constant import (
+from .acl_net import Net
+from .constant import (
     ACL_ERROR_NONE,
     ACL_MEM_MALLOC_HUGE_FIRST,
     ACL_MEMCPY_DEVICE_TO_HOST,
