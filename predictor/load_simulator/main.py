@@ -2,6 +2,7 @@ import argparse
 import os
 import threading
 import time
+import sys
 
 from background_loads import BackgroundManager
 from config import load_config
@@ -116,8 +117,14 @@ def main():
     event_profiles = config.get("event_profiles", {})
     event_schedule = build_event_schedule(config.get("event_schedule", []))
     yolo_cfg = config.get("yolo_model")
-    if yolo_cfg:
+    if not yolo_cfg:
+        print("[YOLO] yolo_model is required in config", flush=True)
+        sys.exit(1)
+    try:
         init_yolo_runner(**yolo_cfg)
+    except Exception as exc:
+        print(f"[YOLO] model init failed: {exc}", flush=True)
+        sys.exit(1)
 
     active_lock = threading.Lock()
     active_instances = []
