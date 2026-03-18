@@ -99,7 +99,7 @@ def main():
     metrics_store = MetricsStore()
 
     monitor_dir = os.path.join(args.output_dir, "monitor")
-    task_output_dir = os.path.join(args.output_dir, "tasks")
+    task_output_dir = os.path.join(args.output_dir, "task_output")
     logger = CsvLogger(monitor_dir, device_name)
     monitor = Monitor(monitor_interval, metrics_store, background_manager, logger)
     monitor.start()

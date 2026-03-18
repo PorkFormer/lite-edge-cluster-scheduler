@@ -55,6 +55,10 @@ class YoloRunner:
         self._net = self._net_cls(self._device, self._weights)
         self._label_list = self._load_label(self._labels)
         self._opt = SimpleNamespace(output_format=self._output_format)
+        print(
+            f"[YOLO] model loaded weights={self._weights} labels={self._labels}",
+            flush=True,
+        )
 
     def close(self):
         if self._net is not None:
