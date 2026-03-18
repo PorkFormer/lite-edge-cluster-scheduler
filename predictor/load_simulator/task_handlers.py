@@ -1,23 +1,35 @@
 import os
 import time
 
+from yolo_runner import YoloRunner
 
-def process_yolo_task(input_dir, output_dir, task_num):
+
+_YOLO_RUNNER = None
+
+
+def init_yolo_runner(**kwargs):
+    global _YOLO_RUNNER
+    if _YOLO_RUNNER is None:
+        _YOLO_RUNNER = YoloRunner(**kwargs)
+    return _YOLO_RUNNER
+
+
+def close_yolo_runner():
+    global _YOLO_RUNNER
+    if _YOLO_RUNNER is not None:
+        _YOLO_RUNNER.close()
+        _YOLO_RUNNER = None
+
+
+def process_yolo_task(input_dir, output_dir, task_num, task_cfg=None):
     if not os.path.isdir(input_dir):
         return 0
-    subdirs = [
-        os.path.join(input_dir, name)
-        for name in sorted(os.listdir(input_dir))
-        if os.path.isdir(os.path.join(input_dir, name))
-    ]
-    processed = 0
-    if subdirs:
-        targets = subdirs[: max(1, int(task_num))]
-        for folder in targets:
-            processed += _process_folder(folder, output_dir)
-    else:
-        processed += _process_folder(input_dir, output_dir)
-    return processed
+    if _YOLO_RUNNER is None:
+        return _process_folder(input_dir, output_dir)
+    max_images = None
+    if task_cfg is not None:
+        max_images = task_cfg.get("max_images")
+    return _YOLO_RUNNER.run_folder(input_dir, output_dir, max_images=max_images)
 
 
 def _process_folder(folder, output_dir):

@@ -10,6 +10,7 @@ from logger import CsvLogger
 from monitor import Monitor
 from task_processor import TaskProcessor
 from task_queue import TaskQueue
+from task_handlers import close_yolo_runner, init_yolo_runner
 
 
 class MetricsStore:
@@ -76,7 +77,7 @@ def main():
     )
     parser.add_argument(
         "--output-dir",
-        default="output",
+        default="task_output",
         help="CSV output directory",
     )
     parser.add_argument(
@@ -114,6 +115,9 @@ def main():
 
     event_profiles = config.get("event_profiles", {})
     event_schedule = build_event_schedule(config.get("event_schedule", []))
+    yolo_cfg = config.get("yolo_model")
+    if yolo_cfg:
+        init_yolo_runner(**yolo_cfg)
 
     active_lock = threading.Lock()
     active_instances = []
@@ -208,6 +212,7 @@ def main():
             active_instances.clear()
         monitor.stop()
         task_processor.stop()
+        close_yolo_runner()
         logger.close()
 
 

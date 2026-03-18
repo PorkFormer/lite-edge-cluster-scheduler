@@ -9,7 +9,7 @@
         {"type": "io", "duration_sec": 160, "mb_per_sec": 30}
       ],
       "enqueue_tasks": [
-        {"task_type": "YoloV5", "input_dir": "input/YoloV5/uav_001", "task_num": 1}
+        {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/uav_001", "task_num": 1}
       ]
     },
     "ground_uplink": {
@@ -33,7 +33,7 @@
       "type": "photo_capture",
       "override": {
         "enqueue_tasks": [
-          {"task_type": "YoloV5", "input_dir": "input/YoloV5/uav_002"}
+          {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/uav_002"}
         ]
       }
     }

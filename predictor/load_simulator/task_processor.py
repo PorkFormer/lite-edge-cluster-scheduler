@@ -51,6 +51,7 @@ class TaskProcessor:
                     input_dir=task.get("input_dir"),
                     output_dir=self.output_dir,
                     task_num=task.get("task_num", 1),
+                    task_cfg=task,
                 )
             else:
                 time.sleep(0.5)

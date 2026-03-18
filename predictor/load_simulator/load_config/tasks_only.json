@@ -1,0 +1,59 @@
+{
+  "device_type": "leo_satellite",
+  "device_name": "LEO-TASK-TEST",
+  "monitor_interval_sec": 3,
+  "event_profiles": {
+    "task_only": {
+      "enqueue_tasks": [
+        {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/task_01", "task_num": 1}
+      ]
+    }
+  },
+  "event_schedule": [
+    {
+      "time": "00:00:00",
+      "type": "task_only",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/task_01", "task_num": 1}
+        ]
+      }
+    },
+    {
+      "time": "00:00:30",
+      "type": "task_only",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/task_02", "task_num": 1}
+        ]
+      }
+    },
+    {
+      "time": "00:01:00",
+      "type": "task_only",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/task_03", "task_num": 1}
+        ]
+      }
+    },
+    {
+      "time": "00:01:30",
+      "type": "task_only",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/task_04", "task_num": 1}
+        ]
+      }
+    },
+    {
+      "time": "00:02:00",
+      "type": "task_only",
+      "override": {
+        "enqueue_tasks": [
+          {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/task_05", "task_num": 1}
+        ]
+      }
+    }
+  ]
+}

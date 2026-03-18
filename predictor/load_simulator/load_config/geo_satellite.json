@@ -9,7 +9,7 @@
         {"type": "io", "duration_sec": 180, "mb_per_sec": 40}
       ],
       "enqueue_tasks": [
-        {"task_type": "YoloV5", "input_dir": "input/YoloV5/geo_001", "task_num": 1}
+        {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/geo_001", "task_num": 1}
       ]
     },
     "ground_uplink": {
@@ -34,7 +34,7 @@
       "override": {
         "loads": [{"type": "cpu", "duration_sec": 240}],
         "enqueue_tasks": [
-          {"task_type": "YoloV5", "input_dir": "input/YoloV5/geo_002"}
+          {"task_type": "YoloV5", "input_dir": "task_input/YoloV5/geo_002"}
         ]
       }
     }
