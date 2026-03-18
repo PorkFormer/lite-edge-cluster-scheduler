@@ -79,11 +79,10 @@ class Net(object):
         # load_model
         self.model_id, ret = acl.mdl.load_from_file(self.model_path)
         check_ret("acl.mdl.load_from_file", ret)
-        print("model_id:{}".format(self.model_id))
 
         self.model_desc = acl.mdl.create_desc()
         self._get_model_info()
-        print("init resource success")
+        print(f"[YOLO] model_id={self.model_id} resource init ok", flush=True)
 
     def _get_model_info(self,):
         ret = acl.mdl.get_desc(self.model_desc, self.model_id)
@@ -122,7 +121,8 @@ class Net(object):
 
         for i, item in enumerate(temp_data_buffer):
             if policy == ACL_MEMCPY_HOST_TO_DEVICE:
-                ptr = acl.util.numpy_to_ptr(dataset[i])
+                data_bytes = dataset[i].tobytes()
+                ptr = acl.util.bytes_to_ptr(data_bytes)
                 ret = acl.rt.memcpy(item["buffer"],
                                     item["size"],
                                     ptr,
@@ -229,7 +229,8 @@ class Net(object):
         for temp in output_data:
             size = temp["size"]
             ptr = temp["buffer"]
-            data = acl.util.ptr_to_numpy(ptr, (size,), 1)
+            data_bytes = acl.util.ptr_to_bytes(ptr, size)
+            data = np.frombuffer(data_bytes, dtype=np.uint8)
             dataset.append(data)
             # print(data)
         return dataset
