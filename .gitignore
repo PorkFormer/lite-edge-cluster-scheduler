@@ -8,10 +8,12 @@ src/CMakeFiles
 *.jpg
 **/__pycache__
 output/
-task_output/
 monitor/
 tasks/
 predictor/load_simulator/output/
-predictor/load_simulator/task_output/
+predictor/load_simulator/task_output/*
+!predictor/load_simulator/task_output/.gitkeep
+predictor/load_simulator/task_input/*
+!predictor/load_simulator/task_input/.gitkeep
 predictor/load_simulator/monitor/
 predictor/load_simulator/tasks/
