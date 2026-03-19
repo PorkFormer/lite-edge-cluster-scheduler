@@ -7,12 +7,21 @@ import psutil
 
 
 class Monitor:
-    def __init__(self, interval_sec, metrics_store, background_manager, logger, latency_target):
+    def __init__(
+        self,
+        interval_sec,
+        metrics_store,
+        background_manager,
+        logger,
+        latency_target,
+        running_state=None,
+    ):
         self.interval_sec = max(0.1, float(interval_sec))
         self.metrics_store = metrics_store
         self.background_manager = background_manager
         self.logger = logger
         self.latency_target = latency_target
+        self.running_state = running_state
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, name="monitor")
         self._last_net = psutil.net_io_counters()
@@ -66,6 +75,8 @@ class Monitor:
             "net_down_kb": net_down_kb,
             "net_latency": net_latency,
         }
+        if self.running_state is not None:
+            metrics.update(self.running_state.snapshot())
         metrics.update(npu_metrics)
         return metrics
 

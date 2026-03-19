@@ -20,11 +20,16 @@ CSV_COLUMNS = [
     "npu_mem_used_mb",
     "npu_mem_bw_util",
     "npu_temp",
-    "task_num",
-    "task_type",
-    "start_time_ms",
-    "end_time_ms",
-    "queue_len_at_start",
+    "enqueue_task_type",
+    "enqueue_task_total_files",
+    "enqueue_time",
+    "start_time",
+    "end_time",
+    "queue_total_tasks",
+    "queue_total_files",
+    "running_task_type",
+    "running_task_total_files",
+    "running_task_remaining_files",
 ]
 
 
@@ -47,26 +52,62 @@ class CsvLogger:
         row = _build_base_row("normal_collect", metrics)
         self.log_row(row)
 
-    def log_task_start(self, task_type, task_num, start_time_ms, queue_len_at_start, metrics):
+    def log_task_start(
+        self,
+        enqueue_task_type,
+        enqueue_task_total_files,
+        enqueue_time,
+        start_time,
+        queue_total_tasks,
+        queue_total_files,
+        running_task_type,
+        running_task_total_files,
+        running_task_remaining_files,
+        metrics,
+    ):
         row = _build_base_row("node_task_start", metrics)
         row.update(
             {
-                "task_num": task_num,
-                "task_type": task_type,
-                "start_time_ms": start_time_ms,
-                "queue_len_at_start": queue_len_at_start,
+                "enqueue_task_type": enqueue_task_type,
+                "enqueue_task_total_files": enqueue_task_total_files,
+                "enqueue_time": enqueue_time,
+                "start_time": start_time,
+                "queue_total_tasks": queue_total_tasks,
+                "queue_total_files": queue_total_files,
+                "running_task_type": running_task_type,
+                "running_task_total_files": running_task_total_files,
+                "running_task_remaining_files": running_task_remaining_files,
             }
         )
         self.log_row(row)
 
-    def log_task_end(self, task_type, task_num, start_time_ms, end_time_ms, metrics):
+    def log_task_end(
+        self,
+        enqueue_task_type,
+        enqueue_task_total_files,
+        enqueue_time,
+        start_time,
+        end_time,
+        queue_total_tasks,
+        queue_total_files,
+        running_task_type,
+        running_task_total_files,
+        running_task_remaining_files,
+        metrics,
+    ):
         row = _build_base_row("node_task_end", metrics)
         row.update(
             {
-                "task_num": task_num,
-                "task_type": task_type,
-                "start_time_ms": start_time_ms,
-                "end_time_ms": end_time_ms,
+                "enqueue_task_type": enqueue_task_type,
+                "enqueue_task_total_files": enqueue_task_total_files,
+                "enqueue_time": enqueue_time,
+                "start_time": start_time,
+                "end_time": end_time,
+                "queue_total_tasks": queue_total_tasks,
+                "queue_total_files": queue_total_files,
+                "running_task_type": running_task_type,
+                "running_task_total_files": running_task_total_files,
+                "running_task_remaining_files": running_task_remaining_files,
             }
         )
         self.log_row(row)

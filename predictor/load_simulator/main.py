@@ -9,6 +9,7 @@ from config import load_config
 from event_scheduler import DAY_SECONDS, build_event_schedule, run_schedule
 from logger import CsvLogger
 from monitor import Monitor
+from running_state import RunningState
 from task_processor import TaskProcessor
 from task_queue import TaskQueue
 from task_handlers import close_yolo_runner, init_yolo_runner
@@ -103,12 +104,14 @@ def main():
     monitor_dir = os.path.join(args.output_dir, "monitor")
     task_output_dir = os.path.join(args.output_dir, "task_output")
     logger = CsvLogger(monitor_dir, device_name)
+    running_state = RunningState()
     monitor = Monitor(
         monitor_interval,
         metrics_store,
         background_manager,
         logger,
         net_latency_target,
+        running_state=running_state,
     )
     monitor.start()
 
@@ -118,6 +121,7 @@ def main():
         output_dir=task_output_dir,
         logger=logger,
         metrics_provider=metrics_store.get,
+        running_state=running_state,
     )
     task_processor.start()
 

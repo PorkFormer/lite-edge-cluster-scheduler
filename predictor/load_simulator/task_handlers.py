@@ -21,7 +21,7 @@ def close_yolo_runner():
         _YOLO_RUNNER = None
 
 
-def process_yolo_task(input_dir, output_dir, task_num, task_cfg=None):
+def process_yolo_task(input_dir, output_dir, task_num, task_cfg=None, progress_cb=None):
     if not os.path.isdir(input_dir):
         return 0
     if _YOLO_RUNNER is None:
@@ -29,7 +29,12 @@ def process_yolo_task(input_dir, output_dir, task_num, task_cfg=None):
     max_images = None
     if task_cfg is not None:
         max_images = task_cfg.get("max_images")
-    return _YOLO_RUNNER.run_folder(input_dir, output_dir, max_images=max_images)
+    return _YOLO_RUNNER.run_folder(
+        input_dir,
+        output_dir,
+        max_images=max_images,
+        progress_cb=progress_cb,
+    )
 
 
 def _process_folder(folder, output_dir):

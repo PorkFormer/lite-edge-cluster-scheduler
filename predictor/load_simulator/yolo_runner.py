@@ -96,7 +96,9 @@ class YoloRunner:
             images = images[: max(1, int(max_images))]
         return images, Path(input_path)
 
-    def run_folder(self, input_path, output_dir, max_images=None, file_prefix=None):
+    def run_folder(
+        self, input_path, output_dir, max_images=None, file_prefix=None, progress_cb=None
+    ):
         images, input_root = self._collect_images(
             input_path, max_images=max_images, file_prefix=file_prefix
         )
@@ -125,6 +127,11 @@ class YoloRunner:
                 verbose=self._verbose,
             )
             processed += 1
+            if progress_cb is not None:
+                try:
+                    progress_cb(processed, len(images))
+                except Exception:
+                    pass
             if self._verbose:
                 summary = result if result else "No detections"
                 print(f"[{processed}/{len(images)}] {rel_path} -> {summary} ({elapsed:.3f}s)")
