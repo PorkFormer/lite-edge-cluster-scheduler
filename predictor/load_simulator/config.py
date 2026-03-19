@@ -21,3 +21,5 @@ def _validate_root(data):
         raise ValueError("device_type is required")
     if "device_name" not in data:
         raise ValueError("device_name is required")
+    if "net_latency_target" not in data:
+        raise ValueError("net_latency_target is required")

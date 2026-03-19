@@ -25,7 +25,7 @@ def process_yolo_task(input_dir, output_dir, task_num, task_cfg=None):
     if not os.path.isdir(input_dir):
         return 0
     if _YOLO_RUNNER is None:
-        return _process_folder(input_dir, output_dir)
+        raise RuntimeError("YOLO runner is not initialized")
     max_images = None
     if task_cfg is not None:
         max_images = task_cfg.get("max_images")

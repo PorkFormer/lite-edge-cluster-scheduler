@@ -95,6 +95,7 @@ def main():
     monitor_interval = config.get("monitor_interval_sec", 3)
     if args.monitor_interval_sec is not None:
         monitor_interval = args.monitor_interval_sec
+    net_latency_target = config["net_latency_target"]
 
     background_manager = BackgroundManager()
     metrics_store = MetricsStore()
@@ -102,7 +103,13 @@ def main():
     monitor_dir = os.path.join(args.output_dir, "monitor")
     task_output_dir = os.path.join(args.output_dir, "task_output")
     logger = CsvLogger(monitor_dir, device_name)
-    monitor = Monitor(monitor_interval, metrics_store, background_manager, logger)
+    monitor = Monitor(
+        monitor_interval,
+        metrics_store,
+        background_manager,
+        logger,
+        net_latency_target,
+    )
     monitor.start()
 
     task_queue = TaskQueue()

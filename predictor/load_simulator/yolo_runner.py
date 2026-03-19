@@ -50,6 +50,15 @@ class YoloRunner:
         self._device = int(device)
         self._output_format = output_format
 
+        print(
+            f"[YOLO] init with weights={self._weights} labels={self._labels} device={self._device}",
+            flush=True,
+        )
+        if not Path(self._weights).exists():
+            raise FileNotFoundError(f"weights not found: {self._weights}")
+        if not Path(self._labels).exists():
+            raise FileNotFoundError(f"labels not found: {self._labels}")
+
         ret = self._acl.init()
         self._check_ret("acl.init", ret)
         self._net = self._net_cls(self._device, self._weights)
