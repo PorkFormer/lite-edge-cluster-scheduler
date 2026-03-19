@@ -114,6 +114,7 @@ def main():
         running_state=running_state,
     )
     monitor.start()
+    time.sleep(monitor_interval)  # wait for first metrics sample to avoid empty rows
 
     task_queue = TaskQueue()
     task_processor = TaskProcessor(

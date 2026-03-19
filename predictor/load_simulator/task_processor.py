@@ -55,10 +55,16 @@ class TaskProcessor:
                 metrics=metrics,
             )
             print(
-                "[Task_Start] 取任务开始执行 "
-                f"type={task_type} "
-                f"num={task.get('task_num', 1)} "
-                f"queue={queue_repr}",
+                "[Task_Start] "
+                f"enqueue_task_type={task_type} "
+                f"enqueue_task_total_files={total_files} "
+                f"enqueue_time={task.get('enqueue_time', 0)} "
+                f"start_time={start_time} "
+                f"queue_total_tasks={queue_total_tasks} "
+                f"queue_total_files={queue_total_files} "
+                f"running_task_type={task_type} "
+                f"running_task_total_files={total_files} "
+                f"running_task_remaining_files={total_files}",
                 flush=True,
             )
 
@@ -96,9 +102,17 @@ class TaskProcessor:
             duration_ms = end_time - start_time
             self.running_state.clear()
             print(
-                "[Task_End] 任务完成 "
-                f"type={task_type} "
-                f"num={task.get('task_num', 1)} "
+                "[Task_End] "
+                f"enqueue_task_type={task_type} "
+                f"enqueue_task_total_files={total_files} "
+                f"enqueue_time={task.get('enqueue_time', 0)} "
+                f"start_time={start_time} "
+                f"end_time={end_time} "
+                f"queue_total_tasks={queue_total_tasks} "
+                f"queue_total_files={queue_total_files} "
+                f"running_task_type={task_type} "
+                f"running_task_total_files={total_files} "
+                f"running_task_remaining_files=0 "
                 f"duration_ms={duration_ms}",
                 flush=True,
             )
